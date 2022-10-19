@@ -713,6 +713,6 @@ def gen_graphs(cpg: Cpg, slices: Dict[int, List], label_dict: Dict[str, Dict[str
                 spg = SPG(testID, name_set, methods, line_set, slice, label, types)
                 if len(spg.node_list) > 0:
                     spg_list.append(spg)
-            except (KeyError, IndexError):
+            except (KeyError, IndexError, TypeError):
                 continue
     return spg_list, vul_count, non_vul_count
