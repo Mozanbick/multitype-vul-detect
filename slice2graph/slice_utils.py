@@ -693,23 +693,26 @@ def gen_graphs(cpg: Cpg, slices: Dict[int, List], label_dict: Dict[str, Dict[str
     spg_list = []
     for testID, dicts in tqdm(slice_set.items(), desc="Labeling"):
         for slice_hash, items in tqdm(dicts.items(), leave=False):
-            testID, name_set, line_set, slice = items
-            if not slice:
-                continue
-            # file_paths, line_lists, methods = query_slice_info_ext(cpg, slice)
-            # if len(file_paths) != len(line_lists):
-            #     this may be something wrong in this slice
+            try:
+                testID, name_set, line_set, slice = items
+                if not slice:
+                    continue
+                # file_paths, line_lists, methods = query_slice_info_ext(cpg, slice)
+                # if len(file_paths) != len(line_lists):
+                #     this may be something wrong in this slice
                 # continue
-            # label = make_label_per_slice_xml(file_paths, line_lists, label_dict)
-            # label = make_label_per_slice_diff(file_paths, line_lists, label_dict)
-            # v2
-            line_dict, methods = query_slice_info_v2(cpg, testID, slice)
-            label = make_label_per_slice_v2(line_dict, label_dict)
-            if label == 1:
-                vul_count += 1
-            else:
-                non_vul_count += 1
-            spg = SPG(testID, name_set, methods, line_set, slice, label, types)
-            if len(spg.node_list) > 0:
-                spg_list.append(spg)
+                # label = make_label_per_slice_xml(file_paths, line_lists, label_dict)
+                # label = make_label_per_slice_diff(file_paths, line_lists, label_dict)
+                # v2
+                line_dict, methods = query_slice_info_v2(cpg, testID, slice)
+                label = make_label_per_slice_v2(line_dict, label_dict)
+                if label == 1:
+                    vul_count += 1
+                else:
+                    non_vul_count += 1
+                spg = SPG(testID, name_set, methods, line_set, slice, label, types)
+                if len(spg.node_list) > 0:
+                    spg_list.append(spg)
+            except (KeyError, IndexError):
+                continue
     return spg_list, vul_count, non_vul_count
