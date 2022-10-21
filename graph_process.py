@@ -62,6 +62,12 @@ def arg_parse():
         help='Load existing slice/function graph from spgs/fpgs dir'
     )
     parser.add_argument(
+        '--gen-corpus',
+        dest='gen_corpus',
+        action='store_const', const=True,
+        help='Generate tokens for each dataset group'
+    )
+    parser.add_argument(
         '--gen-w2v',
         dest='gen_w2v',
         action='store_const', const=True,

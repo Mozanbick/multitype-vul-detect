@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import json
 from configs import modelConfig as ModelConfig
-from utils.objects.cpg import Node, Method, Operators
+from utils.objects.cpg import Node, Method
 from utils.embeddings.embed_utils import extract_tokens
 from typing import List, Dict, Any
 from gensim.models.keyedvectors import Word2VecKeyedVectors
@@ -49,8 +49,8 @@ class NodesEmbedding:
         # buffer for embeddings with padding
         self.target = torch.zeros([self.nodes_dim, self.kv_size + 100]).float()
 
-    def __call__(self, nodes: List[Node]):
-        nodes_embeddings = self.embed_nodes(nodes)
+    def __call__(self, nodes: List[Node], method: Method):
+        nodes_embeddings = self.embed_nodes(nodes, method)
         nodes_tensor = torch.from_numpy(nodes_embeddings).float()
 
         # fix length
@@ -58,7 +58,7 @@ class NodesEmbedding:
         
         return self.target
 
-    def get_vectors(self, tokens, node):
+    def get_vectors(self, tokens):
         vectors = []
 
         for token in tokens:
@@ -69,7 +69,7 @@ class NodesEmbedding:
 
         return vectors
 
-    def embed_nodes(self, nodes: List[Node]):
+    def embed_nodes(self, nodes: List[Node], method: Method):
         embeddings = []
 
         for node in nodes:
@@ -78,11 +78,11 @@ class NodesEmbedding:
             if not node_code:
                 continue
             # tokenize
-            tokens = extract_tokens(node_code)
+            tokens = extract_tokens(node_code, method)
             if not tokens:
                 continue
             # get each token's learned embedding vector
-            vector = np.array(self.get_vectors(tokens, node))
+            vector = np.array(self.get_vectors(tokens))
             # the node's source embedding is the average of it's token embeddings
             # TODO: utilize attention mechanism
             source_embedding = np.mean(vector, axis=0)
@@ -141,9 +141,3 @@ class GraphsEmbedding:
             coo_dict[et] = coo
 
         return coo_dict
-
-
-def nodes_to_input(nodes: List[Node], target, method: Method, nodes_dim, edge_type):
-    """
-    Convert nodes in a slice graph to model inputs (node features and edge adjacency matrix)
-    """

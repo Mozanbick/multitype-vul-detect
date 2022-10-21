@@ -23,6 +23,7 @@ class Method:
         self.ddg_edges: Dict[int, Set] = {}
         self._node_id_set = self.nodes.keys()
         self._local_param: Dict[str, List] = {}
+        self._func_calls: Dict[str, List] = {}
         self.nodes_in_line: Dict[int, List] = {}
         self.use_line_to_def_line: Dict[str, Set] = {}
         self.init_graph()
@@ -90,7 +91,8 @@ class Method:
         """
         Init a graph of this method
         # Do: divide nodes in line number;
-              collect local and param positions;
+              collect local and param information;
+              collect function call information;
               replenish ast relationships due to BLOCK nodes;
         """
         line_node_dict = {}
@@ -100,22 +102,32 @@ class Method:
         self.parseGraph()
         # draw nodes
         last_node = None
+        variable_idx = 0
+        function_idx = 0
         for nid, node in self.nodes.items():
             if not node:
                 del self.nodes[nid]
                 continue
-            # collect local and param positions
-            # info represents for (node's id, node's line number, if a node is pointer type, if a node is used)
+            # collect local and param information
+            # info represents for (node's id, node's line number, if a node is pointer type, node's alias)
             # only the condition of '*' and '['
             p_local = False
             if node.label == "METHOD_PARAMETER_IN":
                 if "*" in node.code or "[" in node.code:
                     p_local = True
-                self._local_param[node.name] = [node.id, node.line_number, p_local, False]
+                self._local_param[node.name] = [node.id, node.line_number, p_local, f"var_{variable_idx}"]
+                variable_idx += 1
             elif node.label == "LOCAL":
                 if "*" in node.code or "[" in node.code:
                     p_local = True
-                self._local_param[node.name] = [node.id, node.line_number, p_local, False]
+                self._local_param[node.name] = [node.id, node.line_number, p_local, f"var_{variable_idx}"]
+                variable_idx += 1
+            # collect function call information
+            # info represents for (node's id, node's alias)
+            elif node.label == "CALL" and not node.name.startswith("<operator>."):
+                if node.name not in self._func_calls:
+                    self._func_calls[node.name] = [node.id, f"func_{function_idx}"]
+                    function_idx += 1
             # replenish ast relationships
             elif node.label == "BLOCK":
                 fid = self.get_father_node(nid)
@@ -482,6 +494,10 @@ class Method:
     @property
     def local_param(self):
         return self._local_param
+
+    @property
+    def func_calls(self):
+        return self._func_calls
 
     def get_params(self):
         """

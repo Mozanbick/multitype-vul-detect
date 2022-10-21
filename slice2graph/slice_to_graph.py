@@ -136,7 +136,7 @@ def graph_to_dataset(
     # w2v = generate_w2vModel(corpus_path, w2v_path, size=ModelConfig.embed_dim)
     w2v = load_w2vModel(w2v_path)
     # embed and save
-    mode = True if 'dtest' in ModelConfig.group else False
+    mode = True if 'test' in ModelConfig.group else False
     dataset = GraphDataset(ModelConfig.dataset, save_path, test=mode)
     for spg in spg_list:
         spg.embed(ModelConfig.nodes_dim, w2v.wv)
@@ -165,25 +165,29 @@ def graph_to_dataset_new(
             g_list = program_functions_to_graphs(cpg)
         else:
             g_list = program_functions_to_graphs_with_load()
-    # generate corpus and embedding model
-    if args.gen_w2v:
+    # generate corpus
+    if args.gen_corpus:
         corpus = Corpus(corpus_path)
         if not args.func_level:  # slice level
-            all_list = program_slices_to_graphs_load_all()
+            all_list = program_slices_to_graphs_with_load()
         else:  # function level
-            all_list = program_functions_to_graphs_load_all()
+            all_list = program_functions_to_graphs_with_load()
         for g in tqdm(all_list, desc="generating corpus..."):
-            corpus.add_corpus(g.node_list)
+            method = cpg.get_method_by_filename(g.testID, g.filenames.pop())
+            corpus.add_corpus(g.node_list, method)
         corpus.save()
+    # generate embedding model
+    if args.gen_w2v:
         generate_w2vModel(corpus_path, w2v_path, size=ModelConfig.nodes_dim)
     # convert slice/function program graph to model input dataset
     if args.g2dataset:
         # load embedding model
         w2v = load_w2vModel(w2v_path)
         # embed and save
-        mode = True if 'dtest' in ModelConfig.group else False
+        mode = True if 'test' in ModelConfig.group else False
         dataset = GraphDataset(ModelConfig.dataset, save_path, test=mode)
         for spg in g_list:
-            spg.embed(ModelConfig.nodes_dim, w2v.wv)
+            method = cpg.get_method_by_filename(spg.testID, spg.filenames.pop())
+            spg.embed(ModelConfig.nodes_dim, method, w2v.wv)
             dataset.add_graph(spg)
         dataset.save()

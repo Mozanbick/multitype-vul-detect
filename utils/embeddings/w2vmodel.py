@@ -27,14 +27,14 @@ class Corpus:
             sample = pickle.load(open(file_path, "rb"))
             yield sample
 
-    def add_corpus(self, nodes: List[Node]):
+    def add_corpus(self, nodes: List[Node], method):
         corpus = []
 
         for node in nodes:
             if not node.code:
                 continue
             # tokenize
-            tokens = extract_tokens(node.code)
+            tokens = extract_tokens(node.code, method)
             corpus += tokens
 
         self.corpus_set += corpus

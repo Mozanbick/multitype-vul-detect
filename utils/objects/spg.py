@@ -274,11 +274,11 @@ class SPG:
         self.adj = None
         self.g = None
 
-    def embed(self, nodes_dim, w2v_keyed_vectors: Word2VecKeyedVectors):
+    def embed(self, nodes_dim, method: Method, w2v_keyed_vectors: Word2VecKeyedVectors):
         graph = DGLGraph()
 
         node_embed = NodesEmbedding(nodes_dim, w2v_keyed_vectors)
-        self.node_vector = node_embed(self.node_list)
+        self.node_vector = node_embed(self.node_list, method)
         edge_embed = GraphsEmbedding(None, self.edge_map)
         self.adj = edge_embed(self.node_list)
 
