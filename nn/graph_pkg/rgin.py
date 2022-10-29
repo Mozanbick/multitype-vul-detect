@@ -29,10 +29,10 @@ def arg_parse():
     parser.add_argument('--epochs', dest='epochs', type=int, help='num-of-epoch')
     parser.add_argument('--train-ratio', dest='train_ratio', type=float,
                         help='ratio of training dataset split')
-    parser.add_argument('--ext-dtest', dest='ext_test', action='store_const',
+    parser.add_argument('--ext-test', dest='ext_test', action='store_const',
                         const=True, default=False,
                         help='split testing dataset within training dataset')
-    parser.add_argument('--dtest-ratio', dest='test_ratio', type=float,
+    parser.add_argument('--test-ratio', dest='test_ratio', type=float,
                         help='ratio of testing dataset split')
     parser.add_argument('--num-workers', dest='n_worker', type=int,
                         help='number of workers when data loading')
@@ -52,9 +52,9 @@ def arg_parse():
         help='train dataset saving directory'
     )
     parser.add_argument(
-        '--dtest-dir',
+        '--test-dir',
         dest='test_dir',
-        help='dtest dataset saving directory'
+        help='test dataset saving directory'
     )
     parser.add_argument(
         '--save-dir',
@@ -81,7 +81,7 @@ def arg_parse():
         bias=False,
         num_bases=-1,
         train_dir="input/dataset/train",
-        test_dir="input/dataset/dtest",
+        test_dir="input/dataset/test",
         save_dir="nn/graph_pkg/model_param/rgin",
         load_epoch=-1
     )

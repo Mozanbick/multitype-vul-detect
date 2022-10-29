@@ -156,8 +156,8 @@ def main():
         suffix = ''
     if 'train' in group:
         save_dir = join(args.dataset_dir, modelConfig.dataset, "train")
-    elif 'dtest' in group:
-        save_dir = join(args.dataset_dir, modelConfig.dataset, "dtest")
+    elif 'test' in group:
+        save_dir = join(args.dataset_dir, modelConfig.dataset, "test")
     else:
         save_dir = join(args.dataset_dir, modelConfig.dataset + suffix)
     points_file = f"./joern/joern-cli/results_{modelConfig.dataset}/{group}/AllVulPoints.txt"
@@ -194,8 +194,8 @@ def main_test():
     group = modelConfig.group
     if 'train' in group:
         save_dir = join(dataset_dir, "train")
-    elif 'dtest' in group:
-        save_dir = join(dataset_dir, "dtest")
+    elif 'test' in group:
+        save_dir = join(dataset_dir, "test")
     else:
         save_dir = dataset_dir
     points_file = f"./joern/joern-cli/results_{modelConfig.dataset}/{group}/AllVulPoints.txt"

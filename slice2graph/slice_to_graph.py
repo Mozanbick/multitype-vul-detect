@@ -101,7 +101,7 @@ def program_functions_to_graphs_load_all():
 def program_slices_to_graphs_load_test():
     spg_list = []
     for file in os.listdir(ModelConfig.spgs_dir):
-        if 'dtest' in file:
+        if 'test' in file:
             path = join(ModelConfig.spgs_dir, file)
             with open(path, "rb") as fp:
                 glist = pickle.load(fp)

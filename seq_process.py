@@ -93,8 +93,8 @@ def main():
     group = modelConfig.group
     if 'train' in group:
         save_dir = join(args.dataset_dir, modelConfig.dataset, "train")
-    elif 'dtest' in group:
-        save_dir = join(args.dataset_dir, modelConfig.dataset, "dtest")
+    elif 'test' in group:
+        save_dir = join(args.dataset_dir, modelConfig.dataset, "test")
     else:
         save_dir = join(args.dataset_dir, modelConfig.dataset)
     points_file = f"./joern/joern-cli/results_{modelConfig.dataset}/{group}/AllVulPoints.txt"
