@@ -487,7 +487,7 @@ def make_label_per_slice_v2(line_dict: Dict[str, Dict[str, List]], label_dict: D
             filename = filepath.split("/")[-1]
             items = filename.split("@@")
             testID = items[0]
-            vul = int(items[1])
+            vul = int(items[1]) if ModelConfig.dataset != "sard" else 0
             if vul == 0:
                 return False
             name = items[2]
@@ -495,6 +495,11 @@ def make_label_per_slice_v2(line_dict: Dict[str, Dict[str, List]], label_dict: D
                 name = testID + '_' + name
             elif ModelConfig.dataset == "oldnvd":
                 name = filename
+            elif ModelConfig.dataset == "sard":
+                testID = testID.removesuffix('#').replace('#', '-')
+                name = items[1]
+                start_line = int(items[2])
+                ls = set(map(lambda x: x + start_line - 1, ls))
             ls = set(ls)
             if testID in label_dict and name in label_dict[testID]:
                 vul_lines = label_dict[testID][name]

@@ -191,7 +191,7 @@ def graph_classify_task(prog_args):
         log,
         val_dataset=val_dataloader
     )
-    result = evaluate(test_dataloader, model, prog_args, logger=logger)
+    result = evaluate(test_dataloader, model, prog_args, log, logger=logger)
     log("Test : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
         result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
 
@@ -241,7 +241,7 @@ def graph_classify_test(prog_args):
     if prog_args.cuda >= 0 and torch.cuda.is_available():
         model = model.cuda()
 
-    result = evaluate(test_dataloader, model, prog_args)
+    result = evaluate(test_dataloader, model, prog_args, log)
     log("Test : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
         result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
 
@@ -293,7 +293,7 @@ def train(dataset, model, prog_args, log, same_feat=True, val_dataset=None):
             loss.item(), elapsed_time, computation_time))
         global_train_time_per_epoch.append(elapsed_time)
         if val_dataset is not None:
-            result = evaluate(val_dataset, model, prog_args)
+            result = evaluate(val_dataset, model, prog_args, log)
             log("Validation : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
                 result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
             if early_stopping_logger['val_acc'] <= result[0] <= train_accu or epoch == 0:
@@ -307,7 +307,7 @@ def train(dataset, model, prog_args, log, same_feat=True, val_dataset=None):
     return early_stopping_logger
 
 
-def evaluate(dataloader, model, prog_args, logger=None):
+def evaluate(dataloader, model, prog_args, log, logger=None):
     if logger and prog_args.save_dir:
         model.load_state_dict(torch.load(prog_args.save_dir + "/" + prog_args.dataset
                                          + "/model.iter-" + str(logger['best_epoch'])))
@@ -333,10 +333,12 @@ def evaluate(dataloader, model, prog_args, logger=None):
             indices = torch.argmax(ypred, dim=1)
             # correct = torch.sum(indices == graph_labels)
             # correct_label += correct.item()
+            loss = F.cross_entropy(ypred, graph_labels)
             acc = test_acc(indices, graph_labels)
             f1 = test_f1(indices, graph_labels)
             pre = test_pre(indices, graph_labels)
             rec = test_rec(indices, graph_labels)
+        log("loss {:.4f} in validation".format(loss.item()))
     # result = correct_label / (len(dataloader) * prog_args.batch_size)
     acc = test_acc.compute()
     # f1 = test_f1.compute()
