@@ -113,13 +113,13 @@ class GraphsEmbedding:
         """
         coo = [[], []]
         node_map = {node.id: idx for idx, node in enumerate(nodes)}
+        node_id_set = {node.id for node in nodes}
 
-        for node in nodes:
-            if node.id in self.edge_map:
-                for node_out in self.edge_map[node.id]:
-                    if node_out != node.id and node_out in node_map:
-                        coo[0].append(node_map[node.id])
-                        coo[1].append(node_map[node_out])
+        for et, em in self.edge_map.items():
+            for edge in em:
+                if edge[0] in node_id_set and edge[1] in node_id_set:
+                    coo[0].append(node_map[edge[0]])
+                    coo[1].append(node_map[edge[1]])
 
         return coo
 

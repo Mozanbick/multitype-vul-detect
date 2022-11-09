@@ -186,7 +186,7 @@ def graph_to_dataset_new(
         # embed and save
         mode = True if 'test' in ModelConfig.group else False
         dataset = GraphDataset(ModelConfig.dataset, save_path, test=mode)
-        for spg in g_list:
+        for spg in tqdm(g_list, desc="convert graphs to dataset..."):
             method = cpg.get_method_by_filename(spg.testID, spg.filenames.pop())
             spg.embed(ModelConfig.nodes_dim, method, w2v.wv)
             dataset.add_graph(spg)
