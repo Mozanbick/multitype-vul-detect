@@ -6,7 +6,7 @@ import dgl.nn as dglnn
 import dgl.nn.functional as fn
 
 from dgl.nn.pytorch import GINConv, RelGraphConv
-from nn.graph_pkg.layers import RGINConv
+from nn.graph_pkg.rgin.layer import RGINConv
 from dgl.nn.pytorch.glob import SumPooling
 
 

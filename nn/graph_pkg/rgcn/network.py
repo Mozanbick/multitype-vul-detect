@@ -3,7 +3,7 @@ import torch.nn as nn
 import dgl
 import torch.nn.functional as F
 from functools import partial
-from nn.graph_pkg.layers import RGCNLayer
+from nn.graph_pkg.rgcn.layer import RGCNLayer
 from dgl.nn.pytorch import RelGraphConv, MaxPooling, GlobalAttentionPooling
 
 
