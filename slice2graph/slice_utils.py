@@ -496,7 +496,8 @@ def make_label_per_slice_v2(line_dict: Dict[str, Dict[str, List]], label_dict: D
             elif ModelConfig.dataset == "oldnvd":
                 name = filename
             elif ModelConfig.dataset == "sard":
-                testID = testID.removesuffix('#').replace('#', '-')
+                if testID.endswith('#'):
+                    testID = testID.removesuffix('#').replace('#', '-')
                 name = items[1]
                 start_line = int(items[2])
                 ls = map(lambda x: x + start_line - 1, ls)
