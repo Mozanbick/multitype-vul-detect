@@ -106,7 +106,7 @@ def arg_parse():
         group='group0',
         func_level=False,
         nodes_dim=205,
-        embed_dim=40,
+        embed_dim=100,
         vul_ratio=1,
         spgs_dir="./joern/repository/",
         fpgs_dir="./joern/repository/",
