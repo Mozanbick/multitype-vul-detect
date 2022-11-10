@@ -1,7 +1,7 @@
 class ModelConfig:
 
     def __init__(self):
-        self._embed_dim = 40
+        self._embed_dim = 100
         self._nodes_dim = 205
         self._spgs_dir = "./joern/data/spgs"
         self._fpgs_dir = "./joern/data/fpgs"

@@ -178,7 +178,7 @@ def graph_to_dataset_new(
         corpus.save()
     # generate embedding model
     if args.gen_w2v:
-        generate_w2vModel(corpus_path, w2v_path, size=ModelConfig.nodes_dim)
+        generate_w2vModel(corpus_path, w2v_path, size=ModelConfig.embed_dim)
     # convert slice/function program graph to model input dataset
     if args.g2dataset:
         # load embedding model
