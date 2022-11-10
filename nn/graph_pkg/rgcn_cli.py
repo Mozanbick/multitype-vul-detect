@@ -73,13 +73,13 @@ def graph_classify_task(prog_args):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    dataset = GraphDataset(prog_args.dataset, prog_args.train_dir)
-    dataset.load()
-
     run_id = make_run_id(f'Train-R-GCN_{prog_args.dataset}', 'GraphBinaryClassify')
     log_file = os.path.join(prog_args.save_dir, f"{run_id}.log")
     log = Logger(log_file)
     log(str(prog_args))
+
+    dataset = GraphDataset(prog_args.dataset, prog_args.train_dir)
+    dataset.load()
 
     if not prog_args.ext_test:
         trian_size = int(prog_args.train_ratio * len(dataset))
@@ -155,14 +155,14 @@ def graph_classify_test(prog_args):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    dataset_test = GraphDataset(prog_args.dataset, prog_args.train_dir)
-    dataset_test.load()
-    test_dataloader = prepare_data(dataset_test, prog_args, train=False)
-
     run_id = make_run_id('Test-R-GCN', 'GraphBinaryClassify')
     log_file = os.path.join(prog_args.save_dir, f"{run_id}.log")
     log = Logger(log_file)
     log(str(prog_args))
+
+    dataset_test = GraphDataset(prog_args.dataset, prog_args.train_dir)
+    dataset_test.load()
+    test_dataloader = prepare_data(dataset_test, prog_args, train=False)
 
     in_dim, feat_dim, out_dim, max_num_node = dataset_test.statistics()
     log("++++++++++STATISTICS ABOUT THE DATASET")
