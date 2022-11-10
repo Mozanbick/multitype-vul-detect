@@ -18,7 +18,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 global_train_time_per_epoch = []
 
 
-def arg_parse(args: argparse.ArgumentParser):
+def arg_parse(args):
     parser = argparse.ArgumentParser(parents=[args], description='R-GCN arguments')
     parser.add_argument('--num-workers', dest='n_worker', type=int,
                         help='number of workers when data loading')
@@ -72,7 +72,7 @@ def graph_classify_task(prog_args):
     save_dir = prog_args.save_dir + "/" + prog_args.dataset
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    
+
     dataset = GraphDataset(prog_args.dataset, prog_args.train_dir)
     dataset.load()
 
@@ -299,8 +299,8 @@ def evaluate(dataloader, model, prog_args, log, logger=None):
     return [acc, f1, precision, recall]
 
 
-def main(args):
-    prog_args = arg_parse(args)
+def main(parser):
+    prog_args = arg_parse(parser)
     # print(prog_args)
     if prog_args.no_train:
         graph_classify_test(prog_args)

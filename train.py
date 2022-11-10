@@ -5,7 +5,7 @@ from nn.graph_pkg.rgin_cli import main as rgin_main
 
 
 def arg_parser():
-    parser = argparse.ArgumentParser(description="training arguments")
+    parser = argparse.ArgumentParser(description="training arguments", add_help=False)
     parser.add_argument(
         '-m',
         dest='model',
@@ -54,6 +54,7 @@ def arg_parser():
                                  SAVE_DICT/DATASET/model-LOAD_EPOCH')
 
     parser.set_defaults(
+        model='rgcn',
         dataset='fan',
         no_train=False,
         cuda=-1,
@@ -69,16 +70,16 @@ def arg_parser():
         bias=False,
         train_dir="input/dataset/train",
         test_dir="input/dataset/test",
-        save_dir="nn/graph_pkg/model_param/rgcn",
+        save_dir="nn/graph_pkg/model_param",
         load_epoch=-1
     )
 
-    return parser.parse_args()
+    return parser, parser.parse_args()
 
 
 if __name__ == '__main__':
-    args = arg_parser()
+    parser, args = arg_parser()
     if args.model == "rgcn":
-        rgcn_main(args)
+        rgcn_main(parser)
     elif args.model == "rgin":
-        rgin_main(args)
+        rgin_main(parser)
