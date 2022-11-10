@@ -60,9 +60,6 @@ def prepare_data(dataset, prog_args, train=False, pre_process=None):
 
 
 def train(dataset, model, args, log, val_dataset=None):
-    save_dir = args.save_dir + "/" + args.dataset
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
     dataloader = dataset
 
     # loss function, optimizer and scheduler
@@ -170,6 +167,10 @@ def evaluate(dataloader, model, args, logger=None):
 
 
 def graph_classify_task(args):
+    save_dir = args.save_dir + "/" + args.dataset
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
     run_id = make_run_id(f'Train-R-GIN_{args.dataset}', 'GraphBinaryClassify')
     log_file = os.path.join(args.save_dir, f"{run_id}.log")
     log = Logger(log_file)
@@ -249,7 +250,11 @@ def graph_classify_task(args):
 
 
 def graph_classify_test(args):
-    run_id = make_run_id('Test-R-GCN', 'GraphBinaryClassify')
+    save_dir = args.save_dir + "/" + args.dataset
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    run_id = make_run_id('Test-R-GIN', 'GraphBinaryClassify')
     log_file = os.path.join(args.save_dir, f"{run_id}.log")
     log = Logger(log_file)
     log(str(args))
