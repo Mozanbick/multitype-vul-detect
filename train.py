@@ -41,6 +41,8 @@ def arg_parser():
         type=int,
         help='patience for early stopping, `-1` means no early stopping'
     )
+    parser.add_argument('--num-workers', dest='n_worker', type=int,
+                        help='number of workers when data loading')
     parser.add_argument(
         '--train-dir',
         dest='train_dir',
@@ -72,6 +74,7 @@ def arg_parser():
         test_ratio=0.1,
         weight_decay=1e-4,
         patience=-1,
+        n_worker=1,
         train_dir="input/dataset/train",
         test_dir="input/dataset/test",
         save_dir="nn/graph_pkg/model_param",
