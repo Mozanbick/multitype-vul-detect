@@ -213,6 +213,10 @@ def graph_classify_task(args):
     dataset = GraphDataset(args.dataset, args.train_dir)
     dataset.load()
 
+    # add self loop
+    for i in range(len(dataset)):
+        dataset.graph_list[i] = dgl.add_self_loop(dataset.graph_list[i])
+
     if not args.ext_test:
         trian_size = int(args.train_ratio * len(dataset))
         test_size = int(args.test_ratio * len(dataset))
@@ -300,6 +304,10 @@ def graph_classify_test(args):
 
     dataset_test = GraphDataset(args.dataset, args.train_dir)
     dataset_test.load()
+
+    # add self loop
+    for i in range(len(dataset_test)):
+        dataset_test.graph_list[i] = dgl.add_self_loop(dataset_test.graph_list[i])
     test_dataloader = prepare_data(dataset_test, args, train=False)
 
     node_dim, feat_dim, out_dim, max_num_node = dataset_test.statistics()
