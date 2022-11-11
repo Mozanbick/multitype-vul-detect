@@ -20,11 +20,22 @@ global_train_time_per_epoch = []
 
 def arg_parse(args):
     parser = argparse.ArgumentParser(parents=[args], description='R-GCN arguments')
+    parser.add_argument('--n-hidden-layers', dest='n_hidden_layers', type=int,
+                        help='number of hidden graph conv layers per batch graph')
+    parser.add_argument('--hidden-dim', dest='hidden_dim', type=int,
+                        help='dimension of hidden layers')
+    parser.add_argument('--dropout', dest='dropout', type=float, help='dropout rate')
+    parser.add_argument('--bias', dest='bias', action='store_const',
+                        const=True, default=False, help='switch for bias')
     parser.add_argument('--num-workers', dest='n_worker', type=int,
                         help='number of workers when data loading')
     parser.add_argument('--num-bases', dest='num_bases', type=int, help='number of bases')
 
     parser.set_defaults(
+        n_hidden_layers=3,
+        hidden_dim=128,
+        dropout=0.0,
+        bias=False,
         n_worker=1,
         num_bases=-1,
     )

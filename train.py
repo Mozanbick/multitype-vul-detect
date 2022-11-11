@@ -2,6 +2,7 @@ import argparse
 
 from nn.graph_pkg.rgcn_cli import main as rgcn_main
 from nn.graph_pkg.rgin_cli import main as rgin_main
+from nn.graph_pkg.sagpool_cli import main as sagpool_main
 
 
 def arg_parser():
@@ -10,7 +11,7 @@ def arg_parser():
         '-m',
         dest='model',
         choices=[
-            'rgcn', 'rgin'
+            'rgcn', 'rgin', 'sagpool'
         ],
         help='Choose a model'
     )
@@ -28,13 +29,18 @@ def arg_parser():
                         help='split testing dataset within training dataset')
     parser.add_argument('--test-ratio', dest='test_ratio', type=float,
                         help='ratio of testing dataset split')
-    parser.add_argument('--n-hidden-layers', dest='n_hidden_layers', type=int,
-                        help='number of hidden graph conv layers per batch graph')
-    parser.add_argument('--hidden-dim', dest='hidden_dim', type=int,
-                        help='dimension of hidden layers')
-    parser.add_argument('--dropout', dest='dropout', type=float, help='dropout rate')
-    parser.add_argument('--bias', dest='bias', action='store_const',
-                        const=True, default=False, help='switch for bias')
+    parser.add_argument(
+        '--weight-decay',
+        dest='weight_decay',
+        type=float,
+        help='weight decay'
+    )
+    parser.add_argument(
+        '--patience',
+        dest='patience',
+        type=int,
+        help='patience for early stopping, `-1` means no early stopping'
+    )
     parser.add_argument(
         '--train-dir',
         dest='train_dir',
@@ -64,10 +70,8 @@ def arg_parser():
         train_ratio=0.8,
         ext_test=False,
         test_ratio=0.1,
-        n_hidden_layers=3,
-        hidden_dim=128,
-        dropout=0.0,
-        bias=False,
+        weight_decay=1e-4,
+        patience=-1,
         train_dir="input/dataset/train",
         test_dir="input/dataset/test",
         save_dir="nn/graph_pkg/model_param",
@@ -83,3 +87,5 @@ if __name__ == '__main__':
         rgcn_main(parser)
     elif args.model == "rgin":
         rgin_main(parser)
+    elif args.model == "sagpool":
+        sagpool_main(parser)
