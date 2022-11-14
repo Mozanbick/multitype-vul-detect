@@ -207,7 +207,7 @@ def graph_classify_task(args):
 
     run_id = make_run_id(f'Train-SAGPool_{args.dataset}', 'GraphBinaryClassify')
     log_file = os.path.join(args.save_dir, f"{run_id}.log")
-    log = Logger(log_file, patience=args.patience)
+    log = Logger(log_file, patience=args.print_every)
     log(str(args))
 
     dataset = GraphDataset(args.dataset, args.train_dir)
