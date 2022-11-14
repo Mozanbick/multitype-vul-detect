@@ -13,6 +13,6 @@ def read_fpg(spgs_dir: str, group: str):
 
 
 if __name__ == '__main__':
-    fd = "joern/repository/newnvd/spgs"
+    fd = "../joern/repository/sard/spgs"
     group = "group6"
     read_fpg(fd, group)

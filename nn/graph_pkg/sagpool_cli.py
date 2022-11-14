@@ -75,7 +75,7 @@ def train(model: torch.nn.Module, train_dataset, args, log, val_dataset=None):
         accum_correct = 0
         total = 0
         total_loss = 0.0
-        log("\nEPOCH ###### {} ######".format(epoch))
+        log("\nEPOCH ###### {} ######".format(epoch), step=epoch)
         total_batch = 0
         for (batch_idx, (batch_graph, graph_labels)) in enumerate(dataloader):
             for (key, value) in batch_graph.ndata.items():
@@ -98,24 +98,24 @@ def train(model: torch.nn.Module, train_dataset, args, log, val_dataset=None):
             total_batch += 1
 
         train_acc = accum_correct / total
-        log("train accuracy for this epoch {} is {:.2f}%".format(epoch, train_acc * 100))
+        log("train accuracy for this epoch {} is {:.2f}%".format(epoch, train_acc * 100), step=epoch)
         elapsed_time = time.time() - begin_time
-        log("loss {:.4f} with epoch time {:.4f} s ".format(total_loss / total_batch, elapsed_time))
+        log("loss {:.4f} with epoch time {:.4f} s ".format(total_loss / total_batch, elapsed_time), step=epoch)
         # validation or not
         if val_dataset is not None:
             result = evaluate(model, val_dataset, args, log)
             log("Validation : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
-                result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
-            log("loss {:.4f} in validation".format(result[4] * 100))
+                result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100), step=epoch)
+            log("loss {:.4f} in validation".format(result[4] * 100), step=epoch)
             # save model
             if early_stopping_logger['val_acc'] <= result[0] <= train_acc or epoch == 0:
                 early_stopping_logger.update(best_epoch=epoch, val_acc=result[0])
                 if args.save_dir is not None:
                     torch.save(model.state_dict(), args.save_dir + "/" + args.dataset
                                + "/model.iter-" + str(early_stopping_logger['best_epoch']))
-                log("best epoch is EPOCH {}, val_acc is {:.2f}%".format(early_stopping_logger['best_epoch'],
-                                                                        early_stopping_logger['val_acc'] * 100))
-                last_record_epoch = epoch
+                    last_record_epoch = epoch
+            log("best epoch is EPOCH {}, val_acc is {:.2f}%".format(early_stopping_logger['best_epoch'],
+                                                                    early_stopping_logger['val_acc'] * 100), step=epoch)
             if result[4] <= last_val_loss or epoch == 0:
                 last_val_loss = result[4]
                 last_record_epoch = epoch
@@ -207,7 +207,7 @@ def graph_classify_task(args):
 
     run_id = make_run_id(f'Train-SAGPool_{args.dataset}', 'GraphBinaryClassify')
     log_file = os.path.join(args.save_dir, f"{run_id}.log")
-    log = Logger(log_file)
+    log = Logger(log_file, patience=args.patience)
     log(str(args))
 
     dataset = GraphDataset(args.dataset, args.train_dir)
