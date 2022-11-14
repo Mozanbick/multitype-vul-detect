@@ -3,7 +3,7 @@ import sys
 import json
 import argparse
 from copy import deepcopy
-path = os.path.abspath(os.path.join(os.getcwd(), '../../../'))
+path = os.path.abspath(os.path.join(os.getcwd(), '/'))
 sys.path.append(path)
 
 from nn.graph_pkg.sagpool.utils import get_stats
