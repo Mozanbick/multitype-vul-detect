@@ -3,6 +3,14 @@ import argparse
 
 def parent_parser():
     parser = argparse.ArgumentParser(description="training arguments", add_help=False)
+    parser.add_argument(
+        'model',
+        type=str,
+        choices=[
+            'rgcn', 'rgin', 'sagpool'
+        ],
+        help='Choose a graph model'
+    )
     parser.add_argument('--dataset', dest='dataset', help='Input Dataset')
     parser.add_argument('--no-train', dest='no_train', action='store_const',
                         const=True, default=False, help='skip the training phase')
