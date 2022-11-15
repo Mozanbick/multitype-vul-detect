@@ -13,13 +13,14 @@ from utils.objects.dataset import GraphDataset
 from nn.graph_pkg.rgcn import RGCNModel
 from torch.utils.data import random_split
 from torchmetrics import Accuracy, F1Score, Precision, Recall
+from nn.graph_pkg.parent_parser import parent_parser
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 global_train_time_per_epoch = []
 
 
-def arg_parse(args):
-    parser = argparse.ArgumentParser(parents=[args], description='R-GCN arguments')
+def arg_parse():
+    parser = argparse.ArgumentParser(parents=[parent_parser()], description='R-GCN arguments')
     parser.add_argument('--n-hidden-layers', dest='n_hidden_layers', type=int,
                         help='number of hidden graph conv layers per batch graph')
     parser.add_argument('--hidden-dim', dest='hidden_dim', type=int,
@@ -310,8 +311,8 @@ def evaluate(dataloader, model, prog_args, log, logger=None):
     return [acc, f1, precision, recall]
 
 
-def main(parser):
-    prog_args = arg_parse(parser)
+def main():
+    prog_args = arg_parse()
     # print(prog_args)
     if prog_args.no_train:
         graph_classify_test(prog_args)

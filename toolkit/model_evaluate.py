@@ -75,7 +75,7 @@ def log_parser(log_path: str):
 
 
 def main():
-    log_path = "../sundries/Train-SAGPool_sard_GraphBinaryClassify__2022-11-13_00-31-18.log"
+    log_path = "../sundries/Train-SAGPool_sard_GraphBinaryClassify__2022-11-14_10-51-04.log"
     save_dir = "./figures"
     suffix = '_' + log_path.split('/')[-1]
     if not os.path.exists(save_dir):

@@ -13,11 +13,11 @@ from utils.objects.dataset import GraphDataset
 from torch.utils.data import random_split
 from torchmetrics import Accuracy, F1Score, Precision, Recall
 from nn.graph_pkg.sagpool import get_sag_network
-from nn.graph_pkg.sagpool.utils import get_stats
+from nn.graph_pkg.parent_parser import parent_parser
 
 
-def arg_parser(args):
-    parser = argparse.ArgumentParser(parents=[args], description="Self-Attention Graph Pooling")
+def arg_parser():
+    parser = argparse.ArgumentParser(parents=[parent_parser()], description="Self-Attention Graph Pooling")
     parser.add_argument(
         '--pool-ratio',
         type=float,
@@ -349,8 +349,8 @@ def graph_classify_test(args):
         result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
 
 
-def main(parser):
-    args = arg_parser(parser)
+def main():
+    args = arg_parser()
     if args.no_train:
         graph_classify_test(args)
     else:

@@ -13,13 +13,14 @@ from utils.objects.dataset import GraphDataset
 from nn.graph_pkg.rgin import RGINModel
 from torch.utils.data import random_split
 from torchmetrics import Accuracy, F1Score, Precision, Recall
+from nn.graph_pkg.parent_parser import parent_parser
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 global_train_time_per_epoch = []
 
 
-def arg_parse(args: argparse.ArgumentParser):
-    parser = argparse.ArgumentParser(parents=[args], description='R-GIN arguments')
+def arg_parse():
+    parser = argparse.ArgumentParser(parents=[parent_parser()], description='R-GIN arguments')
     parser.add_argument('--n-hidden-layers', dest='n_hidden_layers', type=int,
                         help='number of hidden graph conv layers per batch graph')
     parser.add_argument('--hidden-dim', dest='hidden_dim', type=int,
@@ -311,8 +312,8 @@ def graph_classify_test(args):
         result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
 
 
-def main(args):
-    args = arg_parse(args)
+def main():
+    args = arg_parse()
     # print(args)
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
