@@ -28,8 +28,6 @@ def arg_parse():
     parser.add_argument('--dropout', dest='dropout', type=float, help='dropout rate')
     parser.add_argument('--bias', dest='bias', action='store_const',
                         const=True, default=False, help='switch for bias')
-    parser.add_argument('--num-workers', dest='n_worker', type=int,
-                        help='number of workers when data loading')
     parser.add_argument('--num-bases', dest='num_bases', type=int, help='number of bases')
 
     parser.set_defaults(
@@ -37,7 +35,6 @@ def arg_parse():
         hidden_dim=128,
         dropout=0.0,
         bias=False,
-        n_worker=1,
         num_bases=-1,
     )
     return parser.parse_args()
