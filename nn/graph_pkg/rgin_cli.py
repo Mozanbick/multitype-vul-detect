@@ -80,13 +80,17 @@ def train(dataset, model, args, log, val_dataset=None):
     if args.cuda >= 0:
         th.cuda.set_device(args.cuda)
     # training loop
+    last_record_epoch = 0
+    last_train_loss = 0.0
+    last_val_loss = 0.0
     for epoch in range(args.epochs):
         begin_time = time.time()
         model.train()
         accum_correct = 0
         total = 0
-        total_loss = 0
-        log("\nEPOCH ###### {} ######".format(epoch))
+        log("\nEPOCH ###### {} ######".format(epoch), step=epoch)
+        total_loss = 0.0
+        total_batch = 0
         computation_time = 0
         batch = 0
         for (batch_idx, (batch_graph, graph_labels)) in enumerate(dataloader):
@@ -115,22 +119,40 @@ def train(dataset, model, args, log, val_dataset=None):
             computation_time += batch_compute_time
         scheduler.step()
         train_accu = accum_correct / total
-        log("train accuracy for this epoch {} is {:.2f}%".format(epoch, train_accu * 100))
+        log("train accuracy for this epoch {} is {:.2f}%".format(epoch, train_accu * 100), step=epoch)
         elapsed_time = time.time() - begin_time
         log("loss {:.4f} with epoch time {:.4f} s & computation time {:.4f} s ".format(
-            total_loss / (batch + 1), elapsed_time, computation_time))
+            total_loss / total_batch, elapsed_time, computation_time), step=epoch)
         global_train_time_per_epoch.append(elapsed_time)
         if val_dataset is not None:
             result = evaluate(val_dataset, model, args)
             log("Validation : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
-                result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
+                result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100), step=epoch)
+            log("loss {:.4f} in validation".format(result[4] * 100), step=epoch)
             if early_stopping_logger['val_acc'] <= result[0] <= train_accu or epoch == 0:
                 early_stopping_logger.update(best_epoch=epoch, val_acc=result[0])
                 if args.save_dir is not None:
                     th.save(model.state_dict(), args.save_dir + "/" + args.dataset
                             + "/model.iter-" + str(early_stopping_logger['best_epoch']))
             log("best epoch is EPOCH {}, val_acc is {:.2f}%".format(early_stopping_logger['best_epoch'],
-                                                                    early_stopping_logger['val_acc'] * 100))
+                                                                    early_stopping_logger['val_acc'] * 100), step=epoch)
+            if result[4] <= last_val_loss or epoch == 0:
+                last_val_loss = result[4]
+                last_record_epoch = epoch
+            # early stopping
+            if 0 < args.patience < epoch - last_record_epoch:
+                log("early stopping at EPOCH {}, val_acc is {:.2f}%".format(
+                    epoch, early_stopping_logger['val_acc'] * 100))
+                break
+        else:
+            if total_loss / len(dataloader) <= last_train_loss or epoch == 0:
+                last_train_loss = total_loss / len(dataloader)
+                last_record_epoch = epoch
+            # early stopping
+            if 0 < args.patience < epoch - last_record_epoch:
+                log("early stopping at EPOCH {}, train_acc is {:.2f}%".format(
+                    epoch, train_accu * 100))
+        
         th.cuda.empty_cache()
     return early_stopping_logger
 
@@ -141,10 +163,13 @@ def evaluate(dataloader, model, args, logger=None):
                                       + "/model.iter-" + str(logger['best_epoch'])))
     model.eval()
     # correct_label = 0
+    loss_fn = nn.CrossEntropyLoss()
     test_acc = Accuracy()
     test_f1 = F1Score(average='macro', num_classes=2)
     test_pre = Precision(average='macro', num_classes=2)
     test_rec = Recall(average='macro', num_classes=2)
+    total_loss = 0.0
+    total_batch = 0
     with th.no_grad():
         for batch_idx, (batch_graph, graph_labels) in enumerate(dataloader):
             for (key, value) in batch_graph.ndata.items():
@@ -162,17 +187,21 @@ def evaluate(dataloader, model, args, logger=None):
             indices = th.argmax(ypred, dim=1)
             # correct = torch.sum(indices == graph_labels)
             # correct_label += correct.item()
-            acc = test_acc(indices, graph_labels)
-            f1 = test_f1(indices, graph_labels)
-            pre = test_pre(indices, graph_labels)
-            rec = test_rec(indices, graph_labels)
+            loss = loss_fn(ypred, graph_labels)
+            test_acc(indices, graph_labels)
+            test_f1(indices, graph_labels)
+            test_pre(indices, graph_labels)
+            test_rec(indices, graph_labels)
+            total_loss += loss.item()
+            total_batch += 1
+
     # result = correct_label / (len(dataloader) * prog_args.batch_size)
     acc = test_acc.compute()
     # f1 = test_f1.compute()
     precision = test_pre.compute()
     recall = test_rec.compute()
     f1 = 2 * precision * recall / (precision + recall)
-    return [acc, f1, precision, recall]
+    return [acc, f1, precision, recall, total_loss / total_batch]
 
 
 def graph_classify_task(args):
@@ -182,7 +211,7 @@ def graph_classify_task(args):
 
     run_id = make_run_id(f'Train-R-GIN_{args.dataset}', 'GraphBinaryClassify')
     log_file = os.path.join(args.save_dir, f"{run_id}.log")
-    log = Logger(log_file)
+    log = Logger(log_file, patience=args.patience)
     log(str(args))
 
     dataset = GraphDataset(args.dataset, args.train_dir)
@@ -217,16 +246,15 @@ def graph_classify_task(args):
     log(f"dataset label dimension is {out_dim}")
     log(f"the max num node is {max_num_node}")
     log(f"number of graphs is {len(dataset)}")
-
-    hidden_dim = args.hidden_dim
     log("++++++++++MODEL STATISTICS++++++++")
-    log(f"model hidden dim is {hidden_dim}")
-    activation = F.relu
+    log(f"model hidden dim is {args.hidden_dim}")
+    log(f"model hidden layer number is {args.n_hidden_layers}")
+    log(f"model base number is {args.num_bases}")
 
     # initial model
     model = RGINModel(
         feat_dim,
-        hidden_dim,
+        args.hidden_dim,
         out_dim,
         len(ModelConfig.list_etypes),
         num_layers=args.n_hidden_layers,
@@ -250,6 +278,7 @@ def graph_classify_task(args):
         val_dataset=val_dataloader
     )
     result = evaluate(test_dataloader, model, args, logger=logger)
+    log("\nTEST::::::::::")
     log("Test : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
         result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
 
@@ -279,15 +308,15 @@ def graph_classify_test(args):
     log(f"dataset label dimension is {out_dim}")
     log(f"the max num node is {max_num_node}")
     log(f"number of graphs is {len(dataset_test)}")
-
-    hidden_dim = args.hidden_dim
     log("++++++++++MODEL STATISTICS++++++++")
-    log(f"model hidden dim is {hidden_dim}")
+    log(f"model hidden dim is {args.hidden_dim}")
+    log(f"model hidden layer number is {args.n_hidden_layers}")
+    log(f"model base number is {args.num_bases}")
 
     # initial model
     model = RGINModel(
         feat_dim,
-        hidden_dim,
+        args.hidden_dim,
         out_dim,
         len(ModelConfig.list_etypes),
         num_layers=args.n_hidden_layers,
@@ -305,6 +334,7 @@ def graph_classify_test(args):
         model = model.cuda()
 
     result = evaluate(test_dataloader, model, args)
+    log("\nTEST::::::::::")
     log("Test : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
         result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
 

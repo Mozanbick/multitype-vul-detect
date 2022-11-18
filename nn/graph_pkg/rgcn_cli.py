@@ -84,7 +84,7 @@ def graph_classify_task(prog_args):
 
     run_id = make_run_id(f'Train-R-GCN_{prog_args.dataset}', 'GraphBinaryClassify')
     log_file = os.path.join(prog_args.save_dir, f"{run_id}.log")
-    log = Logger(log_file)
+    log = Logger(log_file, patience=prog_args.patience)
     log(str(prog_args))
 
     dataset = GraphDataset(prog_args.dataset, prog_args.train_dir)
@@ -119,16 +119,15 @@ def graph_classify_task(prog_args):
     log(f"dataset label dimension is {out_dim}")
     log(f"the max num node is {max_num_node}")
     log(f"number of graphs is {len(dataset)}")
-
-    hidden_dim = prog_args.hidden_dim
     log("++++++++++MODEL STATISTICS++++++++")
-    log(f"model hidden dim is {hidden_dim}")
-    activation = F.relu
+    log(f"model hidden dim is {prog_args.hidden_dim}")
+    log(f"model hidden layer number is {prog_args.n_hidden_layers}")
+    log(f"model base number is {prog_args.num_bases}")
 
     # initial model
     model = RGCNModel(
         feat_dim,
-        hidden_dim,
+        prog_args.hidden_dim,
         out_dim,
         len(ModelConfig.list_etypes),
         num_bases=prog_args.num_bases,
@@ -151,6 +150,7 @@ def graph_classify_task(prog_args):
         val_dataset=val_dataloader
     )
     result = evaluate(test_dataloader, model, prog_args, log, logger=logger)
+    log("\nTEST::::::::::")
     log("Test : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
         result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
 
@@ -180,15 +180,15 @@ def graph_classify_test(prog_args):
     log(f"dataset label dimension is {out_dim}")
     log(f"the max num node is {max_num_node}")
     log(f"number of graphs is {len(dataset_test)}")
-
-    hidden_dim = prog_args.hidden_dim
     log("++++++++++MODEL STATISTICS++++++++")
-    log(f"model hidden dim is {hidden_dim}")
+    log(f"model hidden dim is {prog_args.hidden_dim}")
+    log(f"model hidden layer number is {prog_args.n_hidden_layers}")
+    log(f"model base number is {prog_args.num_bases}")
 
     # initial model
     model = RGCNModel(
         feat_dim,
-        hidden_dim,
+        prog_args.hidden_dim,
         out_dim,
         len(ModelConfig.list_etypes),
         num_bases=prog_args.num_bases,
@@ -205,6 +205,7 @@ def graph_classify_test(prog_args):
         model = model.cuda()
 
     result = evaluate(test_dataloader, model, prog_args, log)
+    log("\nTEST::::::::::")
     log("Test : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
         result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
 
@@ -217,12 +218,18 @@ def train(dataset, model, prog_args, log, same_feat=True, val_dataset=None):
 
     if prog_args.cuda >= 0:
         torch.cuda.set_device(prog_args.cuda)
+
+    last_record_epoch = 0
+    last_train_loss = 0.0
+    last_val_loss = 0.0
     for epoch in range(prog_args.epochs):
         begin_time = time.time()
         model.train()
         accum_correct = 0
         total = 0
-        log("\nEPOCH ###### {} ######".format(epoch))
+        log("\nEPOCH ###### {} ######".format(epoch), step=epoch)
+        total_loss = 0.0
+        total_batch = 0
         computation_time = 0
         for (batch_idx, (batch_graph, graph_labels)) in enumerate(dataloader):
             for (key, value) in batch_graph.ndata.items():
@@ -247,22 +254,40 @@ def train(dataset, model, prog_args, log, same_feat=True, val_dataset=None):
             optimizer.step()
 
         train_accu = accum_correct / total
-        log("train accuracy for this epoch {} is {:.2f}%".format(epoch, train_accu * 100))
+        log("train accuracy for this epoch {} is {:.2f}%".format(epoch, train_accu * 100), step=epoch)
         elapsed_time = time.time() - begin_time
         log("loss {:.4f} with epoch time {:.4f} s & computation time {:.4f} s ".format(
-            loss.item(), elapsed_time, computation_time))
+            total_loss / total_batch, elapsed_time, computation_time), step=epoch)
         global_train_time_per_epoch.append(elapsed_time)
         if val_dataset is not None:
             result = evaluate(val_dataset, model, prog_args, log)
             log("Validation : Accuracy {:.2f}% | F1 score {:.2f}% | Precision {:.2f}% | Recall {:.2f}%".format(
-                result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100))
+                result[0] * 100, result[1] * 100, result[2] * 100, result[3] * 100), step=epoch)
+            log("loss {:.4f} in validation".format(result[4] * 100), step=epoch)
             if early_stopping_logger['val_acc'] <= result[0] <= train_accu or epoch == 0:
                 early_stopping_logger.update(best_epoch=epoch, val_acc=result[0])
                 if prog_args.save_dir is not None:
                     torch.save(model.state_dict(), prog_args.save_dir + "/" + prog_args.dataset
                                + "/model.iter-" + str(early_stopping_logger['best_epoch']))
             log("best epoch is EPOCH {}, val_acc is {:.2f}%".format(early_stopping_logger['best_epoch'],
-                                                                    early_stopping_logger['val_acc'] * 100))
+                                                                    early_stopping_logger['val_acc'] * 100), step=epoch)
+            if result[4] <= last_val_loss or epoch == 0:
+                last_val_loss = result[4]
+                last_record_epoch = epoch
+            # early stopping
+            if 0 < prog_args.patience < epoch - last_record_epoch:
+                log("early stopping at EPOCH {}, val_acc is {:.2f}%".format(
+                    epoch, early_stopping_logger['val_acc'] * 100))
+                break
+        else:
+            if total_loss / len(dataloader) <= last_train_loss or epoch == 0:
+                last_train_loss = total_loss / len(dataloader)
+                last_record_epoch = epoch
+            # early stopping
+            if 0 < prog_args.patience < epoch - last_record_epoch:
+                log("early stopping at EPOCH {}, train_acc is {:.2f}%".format(
+                    epoch, train_accu * 100))
+
         torch.cuda.empty_cache()
     return early_stopping_logger
 
@@ -277,6 +302,8 @@ def evaluate(dataloader, model, prog_args, log, logger=None):
     test_f1 = F1Score(average='macro', num_classes=2)
     test_pre = Precision(average='macro', num_classes=2)
     test_rec = Recall(average='macro', num_classes=2)
+    total_loss = 0.0
+    total_batch = 0
     with torch.no_grad():
         for batch_idx, (batch_graph, graph_labels) in enumerate(dataloader):
             for (key, value) in batch_graph.ndata.items():
@@ -294,18 +321,19 @@ def evaluate(dataloader, model, prog_args, log, logger=None):
             # correct = torch.sum(indices == graph_labels)
             # correct_label += correct.item()
             loss = F.cross_entropy(ypred, graph_labels)
-            acc = test_acc(indices, graph_labels)
-            f1 = test_f1(indices, graph_labels)
-            pre = test_pre(indices, graph_labels)
-            rec = test_rec(indices, graph_labels)
-        log("loss {:.4f} in validation".format(loss.item()))
+            test_acc(indices, graph_labels)
+            test_f1(indices, graph_labels)
+            test_pre(indices, graph_labels)
+            test_rec(indices, graph_labels)
+            total_loss += loss.item()
+            total_batch += 1
     # result = correct_label / (len(dataloader) * prog_args.batch_size)
     acc = test_acc.compute()
     # f1 = test_f1.compute()
     precision = test_pre.compute()
     recall = test_rec.compute()
     f1 = 2 * precision * recall / (precision + recall)
-    return [acc, f1, precision, recall]
+    return [acc, f1, precision, recall, total_loss / total_batch]
 
 
 def main():
