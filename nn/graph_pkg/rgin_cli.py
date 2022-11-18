@@ -29,6 +29,8 @@ def arg_parse():
     parser.add_argument('--bias', dest='bias', action='store_const',
                         const=True, default=False, help='switch for bias')
     parser.add_argument('--num-bases', dest='num_bases', type=int, help='number of bases')
+    parser.add_argument('--learn-eps', dest='learn_eps', action='store_const',
+                        const=True, default=False, help='use learning eps')
 
     parser.set_defaults(
         n_hidden_layers=3,
@@ -36,6 +38,7 @@ def arg_parse():
         dropout=0.0,
         bias=False,
         num_bases=-1,
+        learn_eps=False,
     )
     return parser.parse_args()
 
@@ -152,7 +155,7 @@ def train(dataset, model, args, log, val_dataset=None):
             if 0 < args.patience < epoch - last_record_epoch:
                 log("early stopping at EPOCH {}, train_acc is {:.2f}%".format(
                     epoch, train_accu * 100))
-        
+
         th.cuda.empty_cache()
     return early_stopping_logger
 
