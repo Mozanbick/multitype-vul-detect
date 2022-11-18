@@ -118,6 +118,7 @@ def train(dataset, model, args, log, val_dataset=None):
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
+            total_batch += 1
             batch_compute_time = time.time() - compute_start
             computation_time += batch_compute_time
         scheduler.step()
