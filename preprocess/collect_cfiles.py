@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from os.path import join, isdir, exists
 from os import listdir
 
@@ -42,8 +43,8 @@ class CollectCFiles:
         items = listdir(path)
         if 'train' not in listdir(self.save_dir):
             os.makedirs(join(self.save_dir, 'train'))
-        if 'dtest' not in listdir(self.save_dir):
-            os.makedirs(join(self.save_dir, 'dtest'))
+        if 'test' not in listdir(self.save_dir):
+            os.makedirs(join(self.save_dir, 'test'))
         for item in items:
             p = join(path, item)
             sub_test = test
@@ -72,7 +73,7 @@ class CollectCFiles:
             filename = names[-1]
             label = 1 if 'OLD' in filename else 0
             save_name = prefix + '@@' + str(label) + '@@' + filename
-            types = 'dtest' if test else 'train'
+            types = 'test' if test else 'train'
             if test:
                 groups = 'group' + str(self.test_group)
             else:
@@ -82,7 +83,7 @@ class CollectCFiles:
                 os.makedirs(save_dir)
             shutil.copyfile(p, join(save_dir, save_name))
 
-    def collect_with_split_fan(self, path, test=False, max_testcase=200):
+    def collect_with_split_fan(self, path, test=False, max_testcase=500):
         test_set = [
             'DoS', 'Exec Code', 'Overflow', 'XSS', 'Dir. Trav', 'Bypass',
             '+Info', '+Priv', 'Men. Corr', 'Sql'
@@ -90,8 +91,8 @@ class CollectCFiles:
         items = listdir(path)
         if 'train' not in listdir(self.save_dir):
             os.makedirs(join(self.save_dir, 'train'))
-        if 'dtest' not in listdir(self.save_dir):
-            os.makedirs(join(self.save_dir, 'dtest'))
+        if 'test' not in listdir(self.save_dir):
+            os.makedirs(join(self.save_dir, 'test'))
         for item in items:
             p = join(path, item)
             sub_test = test
@@ -120,7 +121,7 @@ class CollectCFiles:
             filename = names[-1]
             label = 1 if 'before' in filename else 0
             save_name = prefix + '@@' + str(label) + '@@' + filename
-            types = 'dtest' if test else 'train'
+            types = 'test' if test else 'train'
             if test:
                 groups = 'group' + str(self.test_group)
             else:
@@ -192,14 +193,24 @@ class CollectCFiles:
             shutil.copyfile(p, join(save_dir, save_name))
 
 
+def func_wrapper(base: str, save: str):
+    collectCFiles = CollectCFiles(base, save)
+    if 'fan' in base.lower():
+        collectCFiles.collect_with_split_fan(collectCFiles.base_dir)
+    elif 'convertedNVD' in base:
+        collectCFiles.collect_with_split_nvd(collectCFiles.base_dir)
+    elif 'newnvd' in base.lower():
+        collectCFiles.collect_new_nvd(collectCFiles.base_dir)
+    elif 'oldnvd' in base.lower():
+        collectCFiles.collect_old_nvd(collectCFiles.base_dir)
+
+
 if __name__ == '__main__':
-    to_dir = "/data/zjh/SG/joern/data/cfan/"
+    # need for 2 args: source dataset dir and save dir
+    from_dir = sys.argv[1]
+    to_dir = sys.argv[2]
+    assert os.path.exists(from_dir)
     if not os.path.exists(to_dir):
         os.makedirs(to_dir)
-    # collectCFiles = CollectCFiles(os.getcwd(), to_dir)
-    # collectCFiles.fan_rearrange(os.getcwd())
-    # collectCFiles.collect_with_split_fan(collectCFiles.base_dir, max_testcase=200)
-    # collectCFiles = CollectCFiles(join(os.getcwd(), 'oldnvd'), '')
-    # collectCFiles.collect_old_nvd(collectCFiles.base_dir)
-    collectCFiles = CollectCFiles(join(os.getcwd(), 'NVD_func'), join(os.getcwd(), 'nnvd'))
-    collectCFiles.collect_new_nvd(collectCFiles.base_dir)
+
+    func_wrapper(from_dir, to_dir)

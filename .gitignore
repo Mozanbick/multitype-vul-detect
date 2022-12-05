@@ -1,0 +1,16 @@
+**/__pycache__
+input/
+joern/*
+!joern/files
+joern/files/*
+!joern/files/*.txt
+!joern/files/*.xml
+!joern/joern-cli
+joern/joern-cli/*
+!joern/joern-cli/scripts
+nn/graph_pkg/model_param/
+sundries/
+venv/
+.idea/
+toolkit/figures/
+toolkit/*.txt
