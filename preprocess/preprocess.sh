@@ -26,11 +26,17 @@ SCALA_POINTS_PATH=$(cd `dirname $0`; cd ..; pwd)/joern/joern-cli/scripts/get-poi
 mkdir $TO_DIR/parse_$DATASET_NAME
 for file in `ls $FROM_DIR`
 do
-  if [ -d $FROM_DIR/$file ]
-  then
-    bash $JOERN_PARSE $FROM_DIR/$file -o $TO_DIR/parse_$DATASET_NAME/$file.bin
-#    echo $FROM_DIR/$file
-#    echo $TO_DIR/parse_$DATASET_NAME/$file.bin
+  if [ "$file" == "train" || "$file" == "test" ];then
+    for in_file in `ls $FROM_DIR/$file`
+    do
+      if [ -d $FROM_DIR/$file/$in_file ];then
+        bash $JOERN_PARSE $FROM_DIR/$file/$in_file -o $TO_DIR/parse_$DATASET_NAME/$file_$in_file.bin
+      fi
+    done
+  else
+    if [ -d $FROM_DIR/$file ];then
+      bash $JOERN_PARSE $FROM_DIR/$file -o $TO_DIR/parse_$DATASET_NAME/$file.bin
+    fi
   fi
 done
 
