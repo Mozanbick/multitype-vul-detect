@@ -51,9 +51,9 @@ private def extractFuncCpg(outputDir: String="results") = {
 	}
 }
 
-@main def main() = {
+def extractFuncs(dir_path: String) = {
 	// Optional: modify the output path
-	val dirPath = args(0)
+	val dirPath = dir_path
 	val resultPath = new File(dirPath)
 	resultPath.mkdirs()
 

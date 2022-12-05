@@ -11,6 +11,7 @@ TO_DIR=$3
 JOERN=`whereis joern | awk -F '[:]' '{print $2}'`/joern-cli/joern
 JOERN_PARSE=`whereis joern | awk -F '[:]' '{print $2}'`/joern-cli/joern-parse
 EXTERNAL_PATH=$(cd `dirname $0`; cd ..; pwd)/joern/files/sensi_funcs.txt
+SCALA_EXEC_PATH=$(cd `dirname $0`; cd ..; pwd)/joern/joern-cli/scripts/exec.sc
 SCALA_FUNCS_PATH=$(cd `dirname $0`; cd ..; pwd)/joern/joern-cli/scripts/extract-funcs-info.sc
 SCALA_POINTS_PATH=$(cd `dirname $0`; cd ..; pwd)/joern/joern-cli/scripts/get-points.sc
 
@@ -23,22 +24,26 @@ SCALA_POINTS_PATH=$(cd `dirname $0`; cd ..; pwd)/joern/joern-cli/scripts/get-poi
 #echo $SCALA_POINTS_PATH
 
 # Parse C files in $FROM_DIR by $JOERN_PARSE and save to $TO_DIR/parse_$DATASET_NAME
-mkdir $TO_DIR/parse_$DATASET_NAME
+# Call $JOERN to extract function cpgs and points info then save to $TO_DIR/results_$DATASET_NAME
+mkdir $TO_DIR"/parse_"$DATASET_NAME
 for file in `ls $FROM_DIR`
 do
-  if [ "$file" == "train" || "$file" == "test" ];then
+  if [ "$file" == "train" ] || [ "$file" == "test" ]; then
     for in_file in `ls $FROM_DIR/$file`
     do
-      if [ -d $FROM_DIR/$file/$in_file ];then
-        bash $JOERN_PARSE $FROM_DIR/$file/$in_file -o $TO_DIR/parse_$DATASET_NAME/$file_$in_file.bin
+      if [ -d $FROM_DIR/$file/$in_file ]; then
+        # parse
+#        bash $JOERN_PARSE $FROM_DIR/$file/$in_file -o $TO_DIR"/parse_"$DATASET_NAME"/"$file"_"$in_file".bin"
+        # extract
+        bash $JOERN --script $SCALA_EXEC_PATH --params cpg_path=$TO_DIR"/parse_"$DATASET_NAME"/"$file"_"$in_file".bin",save_path=$TO_DIR"/results_"$DATASET_NAME"/"$file"_"$in_file,funcs_path=$EXTERNAL_PATH --import $SCALA_FUNCS_PATH,$SCALA_POINTS_PATH
       fi
     done
   else
-    if [ -d $FROM_DIR/$file ];then
-      bash $JOERN_PARSE $FROM_DIR/$file -o $TO_DIR/parse_$DATASET_NAME/$file.bin
+    if [ -d $FROM_DIR/$file ]; then
+      # parse
+#      bash $JOERN_PARSE $FROM_DIR/$file -o $TO_DIR/parse_$DATASET_NAME/$file.bin
+      # extract
+      bash $JOERN --script $SCALA_EXEC_PATH --params cpg_path=$TO_DIR"/parse_"$DATASET_NAME"/"$file".bin",save_path=$TO_DIR"/results_"$DATASET_NAME"/"$file,funcs_path=$EXTERNAL_PATH --import $SCALA_FUNCS_PATH,$SCALA_POINTS_PATH
     fi
   fi
 done
-
-# Call $JOERN to extract function cpgs and points info then save to $TO_DIR/results_$DATASET_NAME
-#bash $JOERN | "importCpg(\"$TO_DIR/parse_$DATASET_NAME/group0.bin\")"

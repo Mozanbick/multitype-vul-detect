@@ -87,10 +87,10 @@ private def getAllPointsID(funcsPath: String): List[List[Long]] = {
 	((((list:+getFCPoints(funcsPath)):+getAUPUPoints()):+getAEPoints()):+getFPPoints()):+getFRPoints()
 }
 
-@main def main() = {
+def getPoints(dir_path: String, funcs_path: String) = {
 	// The same with which in the extract-funcs-info.sc
-	val dirPath = args(0)
-	val funcsPath = args(1)
+	val dirPath = dir_path
+	val funcsPath = funcs_path
 	val points = getAllPointsID(funcsPath)
 	val filename = "AllVulPoints.txt"
 	

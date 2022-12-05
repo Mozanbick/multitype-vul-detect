@@ -83,7 +83,7 @@ class CollectCFiles:
                 os.makedirs(save_dir)
             shutil.copyfile(p, join(save_dir, save_name))
 
-    def collect_with_split_fan(self, path, test=False, max_testcase=500):
+    def collect_with_split_fan(self, path, test=False, max_testcase=300):
         test_set = [
             'DoS', 'Exec Code', 'Overflow', 'XSS', 'Dir. Trav', 'Bypass',
             '+Info', '+Priv', 'Men. Corr', 'Sql'
