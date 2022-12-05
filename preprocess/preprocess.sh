@@ -33,7 +33,7 @@ do
     do
       if [ -d $FROM_DIR/$file/$in_file ]; then
         # parse
-#        bash $JOERN_PARSE $FROM_DIR/$file/$in_file -o $TO_DIR"/parse_"$DATASET_NAME"/"$file"_"$in_file".bin"
+        bash $JOERN_PARSE $FROM_DIR/$file/$in_file -o $TO_DIR"/parse_"$DATASET_NAME"/"$file"_"$in_file".bin"
         # extract
         bash $JOERN --script $SCALA_EXEC_PATH --params cpg_path=$TO_DIR"/parse_"$DATASET_NAME"/"$file"_"$in_file".bin",save_path=$TO_DIR"/results_"$DATASET_NAME"/"$file"_"$in_file,funcs_path=$EXTERNAL_PATH --import $SCALA_FUNCS_PATH,$SCALA_POINTS_PATH
       fi
@@ -41,7 +41,7 @@ do
   else
     if [ -d $FROM_DIR/$file ]; then
       # parse
-#      bash $JOERN_PARSE $FROM_DIR/$file -o $TO_DIR/parse_$DATASET_NAME/$file.bin
+      bash $JOERN_PARSE $FROM_DIR/$file -o $TO_DIR/parse_$DATASET_NAME/$file.bin
       # extract
       bash $JOERN --script $SCALA_EXEC_PATH --params cpg_path=$TO_DIR"/parse_"$DATASET_NAME"/"$file".bin",save_path=$TO_DIR"/results_"$DATASET_NAME"/"$file,funcs_path=$EXTERNAL_PATH --import $SCALA_FUNCS_PATH,$SCALA_POINTS_PATH
     fi
