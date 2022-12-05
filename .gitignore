@@ -4,7 +4,6 @@ joern/*
 !joern/files
 joern/files/*
 !joern/files/*.txt
-!joern/files/*.xml
 !joern/joern-cli
 joern/joern-cli/*
 !joern/joern-cli/scripts

@@ -23,16 +23,16 @@ SCALA_POINTS_PATH=$(cd `dirname $0`; cd ..; pwd)/joern/joern-cli/scripts/get-poi
 #echo $SCALA_POINTS_PATH
 
 # Parse C files in $FROM_DIR by $JOERN_PARSE and save to $TO_DIR/parse_$DATASET_NAME
-#mkdir $TO_DIR/parse_$DATASET_NAME
-#for file in `ls $FROM_DIR`
-#do
-#  if [ -d $FROM_DIR/$file ]
-#  then
-#    bash $JOERN_PARSE $FROM_DIR/$file -o $TO_DIR/parse_$DATASET_NAME/$file.bin
-##    echo $FROM_DIR/$file
-##    echo $TO_DIR/parse_$DATASET_NAME/$file.bin
-#  fi
-#done
+mkdir $TO_DIR/parse_$DATASET_NAME
+for file in `ls $FROM_DIR`
+do
+  if [ -d $FROM_DIR/$file ]
+  then
+    bash $JOERN_PARSE $FROM_DIR/$file -o $TO_DIR/parse_$DATASET_NAME/$file.bin
+#    echo $FROM_DIR/$file
+#    echo $TO_DIR/parse_$DATASET_NAME/$file.bin
+  fi
+done
 
 # Call $JOERN to extract function cpgs and points info then save to $TO_DIR/results_$DATASET_NAME
-bash $JOERN | "importCpg(\"$TO_DIR/parse_$DATASET_NAME/group0.bin\")"
+#bash $JOERN | "importCpg(\"$TO_DIR/parse_$DATASET_NAME/group0.bin\")"
