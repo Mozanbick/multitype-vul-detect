@@ -106,28 +106,24 @@ def run_experiments(args):
 
 
 def grid_search(config: dict):
-    parser, _ = parent_parser()
-    args = arg_parser(parser)
+    args = arg_parser()
 
     best_acc, err_bd = 0.0, 0.0
     best_args = vars(args)
+    args.lr = 0.0001
+    args.weight_decay = 1e-5
+    args.pool_ratio = 0.5
     for arch in config['arch']:
         args.architecture = arch
         for batch_size in config['batch_size']:
             args.batch_size = batch_size
             for hidden in config['hidden']:
                 args.hidden_dim = hidden
-                for pool_ratio in config['pool_ratio']:
-                    args.pool_ratio = pool_ratio
-                    for lr in config['lr']:
-                        args.lr = lr
-                        for weight_decay in config['weight_decay']:
-                            args.weight_decay = weight_decay
-                            acc, bd = run_experiments(args)
-                            if acc > best_acc:
-                                best_acc = acc
-                                err_bd = bd
-                                best_args = deepcopy(vars(args))
+                acc, bd = run_experiments(args)
+                if acc > best_acc:
+                    best_acc = acc
+                    err_bd = bd
+                    best_args = deepcopy(vars(args))
     args.output_path = "./output"
     if not os.path.exists(args.output_path):
         os.makedirs(args.output_path)
