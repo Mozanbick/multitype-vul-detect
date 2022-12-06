@@ -23,6 +23,11 @@ SCALA_POINTS_PATH=$(cd `dirname $0`; cd ..; pwd)/joern/joern-cli/scripts/get-poi
 #echo $SCALA_FUNCS_PATH
 #echo $SCALA_POINTS_PATH
 
+if [ $# -ne 3 ]; then
+  echo "Number of params should be 3: [dataset, data_dir, save_dir]. Please verify your command."
+  exit 1
+fi
+
 # Parse C files in $FROM_DIR by $JOERN_PARSE and save to $TO_DIR/parse_$DATASET_NAME
 # Call $JOERN to extract function cpgs and points info then save to $TO_DIR/results_$DATASET_NAME
 mkdir $TO_DIR"/parse_"$DATASET_NAME

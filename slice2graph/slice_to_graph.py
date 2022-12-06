@@ -159,12 +159,18 @@ def graph_to_dataset_new(
         if args.gen_graph:
             g_list = program_slices_to_graphs(cpg, points_file, label_path)
         else:
-            g_list = program_slices_to_graphs_with_load()
+            try:
+                g_list = program_slices_to_graphs_with_load()
+            except FileNotFoundError:
+                return
     else:  # function level
         if args.gen_graph:
             g_list = program_functions_to_graphs(cpg)
         else:
-            g_list = program_functions_to_graphs_with_load()
+            try:
+                g_list = program_functions_to_graphs_with_load()
+            except FileNotFoundError:
+                return
     # generate corpus
     if args.gen_corpus:
         corpus = Corpus(corpus_path)

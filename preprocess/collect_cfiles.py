@@ -1,8 +1,14 @@
 import os
 import shutil
 import sys
+import hashlib
 from os.path import join, isdir, exists
 from os import listdir
+
+
+def file_hash(path: str):
+    with open(path, "r") as fp:
+        return hashlib.md5(fp.read().encode()).hexdigest()
 
 
 class CollectCFiles:
@@ -131,12 +137,14 @@ class CollectCFiles:
                 os.makedirs(save_dir)
             shutil.copyfile(p, join(save_dir, save_name))
 
-    def fan_rearrange(self, path: str):
+    def fan_rearrange(self, path: str, hash_list=None):
         items = listdir(path)
         for item in items:
+            if item.startswith('CVE'):
+                hash_list = []
             p = join(path, item)
             if isdir(p):
-                self.fan_rearrange(p)
+                self.fan_rearrange(p, hash_list)
                 if item.isdigit():
                     shutil.rmtree(p)
                 continue
@@ -145,8 +153,10 @@ class CollectCFiles:
                 filename = idx + '_' + item
                 shutil.copyfile(p, join(path, '../', filename))
             elif item.endswith('.diff'):
-                if not os.path.exists(join(path, '../', item)):
-                    shutil.copyfile(p, join(path, '../', item))
+                md5 = file_hash(p)
+                if md5 not in hash_list:
+                    hash_list.append(md5)
+                    shutil.copyfile(p, join(path, '../', idx + '_' + item))
 
     def collect_old_nvd(self, path, max_testcase=500):
         for item in listdir(path):
@@ -196,6 +206,7 @@ class CollectCFiles:
 def func_wrapper(base: str, save: str):
     collectCFiles = CollectCFiles(base, save)
     if 'fan' in base.lower():
+        collectCFiles.fan_rearrange(collectCFiles.base_dir)
         collectCFiles.collect_with_split_fan(collectCFiles.base_dir)
     elif 'convertedNVD' in base:
         collectCFiles.collect_with_split_nvd(collectCFiles.base_dir)
