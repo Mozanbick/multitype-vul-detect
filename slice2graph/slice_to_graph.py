@@ -1,5 +1,6 @@
 import os
 import pickle
+import shutil
 from slice2graph.gen_slice import *
 from utils.objects.cpg import Cpg
 from utils.objects import FPG
@@ -145,6 +146,26 @@ def graph_to_dataset(
     dataset.save()
 
 
+def change_test_paths(dataset: str, save_path: str):
+    """
+    The original path of test dataset is `<save_path>/<dataset_name>/<vul_type>/dataset.bin`,
+    we need to convert this path to `<save_path>/<vul_type>/<dataset_name>/dataset.bin`,
+    for the convenience for the model test implementation.
+    """
+    # check sub folder structure
+    if dataset not in os.listdir(save_path):
+        return
+    for vul_type in os.listdir(join(save_path, dataset)):
+        for filename in os.listdir(join(save_path, dataset, vul_type)):
+            src_path = join(save_path, dataset, vul_type, filename)
+            dst_dir = join(save_path, vul_type, dataset)
+            if not exists(dst_dir):
+                os.makedirs(dst_dir)
+            shutil.move(src_path, join(dst_dir, filename))
+    # delete original folder
+    shutil.rmtree(join(save_path, dataset))
+
+
 def graph_to_dataset_new(
         cpg: Cpg,
         points_file: str,
@@ -197,3 +218,5 @@ def graph_to_dataset_new(
             spg.embed(ModelConfig.nodes_dim, method, w2v.wv)
             dataset.add_graph(spg)
         dataset.save()
+        if mode:
+            change_test_paths(ModelConfig.dataset, save_path)

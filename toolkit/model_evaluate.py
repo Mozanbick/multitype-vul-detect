@@ -86,7 +86,7 @@ def log_parser(log_path: str):
         epochs = re.findall(r"\d+", s_epochs)
         l_epochs.append(int(epochs[0]))
         loss_train = re.findall(r"\d+\.\d+", s_loss_train)
-        l_loss_train.append(float(loss_train[0]) * 300)
+        l_loss_train.append(float(loss_train[0]) * 3500)
         loss_val = re.findall(r"\d+\.\d+", s_loss_val)
         l_loss_val.append(float(loss_val[0]))
         results = re.findall(r"\d+\.\d+", s_results)
@@ -101,14 +101,14 @@ def log_parser(log_path: str):
 
 
 def main():
-    log_path = "../sundries/Train-R-GIN_cnvd_GraphBinaryClassify__2022-11-21_11-06-43.log"
+    log_path = "../sundries/Train-SAGPool_cfan_GraphBinaryClassify__2022-12-08_14-34-16.log"
     save_dir = "./figures"
     suffix = '_' + log_path.split('/')[-1]
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     epochs, loss_train, loss_val, acc, f1, pre, rec, best_epoch = log_parser(log_path)
-    draw_loss(epochs, loss_train, loss_val, save_dir, suffix)
-    # draw_results(epochs, acc, f1, save_dir, suffix)
+    # draw_loss(epochs, loss_train, loss_val, save_dir, suffix)
+    draw_results(epochs, acc, f1, save_dir, suffix)
 
 
 if __name__ == '__main__':
