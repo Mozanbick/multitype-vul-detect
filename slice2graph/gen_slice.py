@@ -1,5 +1,6 @@
 import os
 import time
+import func_timeout
 from slice2graph.slice_utils import *
 from utils.objects import Cpg, Method
 from typing import List
@@ -15,7 +16,10 @@ def FC_slices(cpg: Cpg, point_list: List):
         testID, method = cpg.get_node_info(point_id)
         if not method:
             continue
-        fc_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        try:
+            fc_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        except func_timeout.FunctionTimedOut:
+            continue
     return fc_slices
 
 
@@ -48,7 +52,10 @@ def AUPU_slices(cpg: Cpg, point_list: List):
         if not method:
             continue
         # point_id = method.get_parent_node(point_id)
-        apu_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        try:
+            apu_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        except func_timeout.FunctionTimedOut:
+            continue
     return apu_slices
 
 
@@ -81,7 +88,10 @@ def AE_slices(cpg: Cpg, point_list: List):
         if not method:
             continue
         # point_id = method.get_parent_node(point_id)
-        ae_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        try:
+            ae_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        except func_timeout.FunctionTimedOut:
+            continue
     return ae_slices
 
 
@@ -113,7 +123,10 @@ def FP_slices(cpg: Cpg, point_list: List):
         testID, method = cpg.get_node_info(point_id)
         if not method:
             continue
-        fp_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        try:
+            fp_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        except func_timeout.FunctionTimedOut:
+            continue
     return fp_slices
 
 
@@ -145,7 +158,10 @@ def FR_slices(cpg: Cpg, point_list: List):
         testID, method = cpg.get_node_info(point_id)
         if not method:
             continue
-        fr_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        try:
+            fr_slices[point_id] = gen_slices(cpg, testID, method, point_id)
+        except func_timeout.FunctionTimedOut:
+            continue
     return fr_slices
 
 
