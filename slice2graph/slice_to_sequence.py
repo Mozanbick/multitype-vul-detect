@@ -25,13 +25,13 @@ def graph_to_sequence(
         if not exists(seq_save_dir):
             os.makedirs(seq_save_dir)
         for g in g_list:
-            # t, lines = g.to_sequence(cpg)
-            # seq_save_path = join(seq_save_dir, f"{t}_slices.txt")
-            # with open(seq_save_path, "a", encoding="utf-8") as fp:
-            #     fp.write("\n--------------------------------------------------\n")
-            #     fp.write("\n".join(lines))
-            #     fp.write("\n==================================================\n\n")
-            with open(join(seq_save_dir, "spg_info.txt"), "a", encoding="utf-8") as fp:
+            t, lines = g.to_sequence(cpg)
+            seq_save_path = join(seq_save_dir, f"{t}_slices.txt")
+            with open(seq_save_path, "a", encoding="utf-8") as fp:
                 fp.write("\n--------------------------------------------------\n")
-                print(g, file=fp)
+                fp.write("\n".join(lines))
                 fp.write("\n==================================================\n\n")
+            # with open(join(seq_save_dir, "spg_info.txt"), "a", encoding="utf-8") as fp:
+            #     fp.write("\n--------------------------------------------------\n")
+            #     print(g, file=fp)
+            #     fp.write("\n==================================================\n\n")

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Date: 2022-12-3
-# Author: Create by zjh
+# Author: Created by Mozanbick
 # Description: This script is to preprocess dataset files
 # Arguments: dataset name; dataset files dir; save dir;
 # Version: 0.1
